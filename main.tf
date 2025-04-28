@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "us-east-1"
+  region = var.aws_region
 }
 
 terraform {
@@ -11,12 +11,12 @@ terraform {
 }
 
 resource "aws_vpc" "RDS-VPC" {
-  cidr_block           = "192.168.0.0/16"
+  cidr_block           = var.VPC_cidr_block
   enable_dns_hostnames = true
   enable_dns_support   = true
 
   tags = {
-    Name = "RDS-VPC"
+    Name = var.VPC_Name
   }
 }
 
@@ -24,31 +24,31 @@ resource "aws_internet_gateway" "RDS-IGW" {
   vpc_id = aws_vpc.RDS-VPC.id
 
   tags = {
-    Name = "RDS-IGW"
+    Name = "${var.VPC_Name}-IGW"
   }
 }
 
 resource "aws_subnet" "RDS-VPC-Public-Subnet" {
-  count                   = 3
+  count                   = length(var.RDS_VPC_Public_Subnet)
   vpc_id                  = aws_vpc.RDS-VPC.id
-  cidr_block              = ["192.168.1.0/24", "192.168.2.0/24", "192.168.3.0/24"]
-  availability_zone       = ["us-east-1a", "us-east-1b", "us-east-1c"]
+  cidr_block              = element(var.RDS_VPC_Public_Subnet, count.index)
+  availability_zone       = element(var.azs, count.index)
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "RDS-VPC-Public-Subnet"
+    Name = "${var.VPC_Name}-Public-Subnet-${count.index+1}"
   }
 }
 
 resource "aws_subnet" "RDS-VPC-Private-Subnet" {
-  count                   = 3
+  count                   = length(var.RDS_VPC_Private_Subnet)
   vpc_id                  = aws_vpc.RDS-VPC.id
-  cidr_block              = ["192.168.10.0/24", "192.168.20.0/24", "192.168.30.0/24"]
-  availability_zone       = ["us-east-1a", "us-east-1b", "us-east-1c"]
+  cidr_block              = element(var.RDS_VPC_Private_Subnet, count.index)
+  availability_zone       = element(var.azs, count.index)
   map_public_ip_on_launch = false
 
   tags = {
-    Name = "RDS-VPC-Private-Subnet"
+    Name = "${var.VPC_Name}-Private-Subnet-${count.index+1}"
   }
 }
 
@@ -60,7 +60,7 @@ resource "aws_route_table" "RDS-VPC-Public-RT" {
   }
 
   tags = {
-    Name = "RDS-VPC-Public-RT"
+    Name = "${var.VPC_Name}-Public-RT"
   }
 }
 
@@ -68,19 +68,19 @@ resource "aws_route_table" "RDS-VPC-Private-RT" {
   vpc_id = aws_vpc.RDS-VPC.id
 
   tags = {
-    Name = "RDS-VPC-Private-RT"
+    Name = "${var.VPC_Name}-Private-RT"
   }
 }
 
 resource "aws_route_table_association" "RDS-VPC-Public-RT-Association" {
-  count = 3
-  subnet_id = aws_subnet.RDS-VPC-Public-Subnet[count.index].id
+  count = length(var.RDS_VPC_Public_Subnet)
+  subnet_id = element(aws_subnet.RDS-VPC-Public-Subnet.*.id, count.index)
   route_table_id = aws_route_table.RDS-VPC-Public-RT.id
 }
 
 resource "aws_route_table_association" "RDS-VPC-Private-RT-Association" {
-  count = 3
-  subnet_id = aws_subnet.RDS-VPC-Private-Subnet[count.index].id
+  count = length(var.RDS_VPC_Private_Subnet)
+  subnet_id = element(aws_subnet.RDS-VPC-Private-Subnet.*.id, count.index)
   route_table_id = aws_route_table.RDS-VPC-Private-RT.id
 }
 
