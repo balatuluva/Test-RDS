@@ -1,7 +1,7 @@
 resource "random_password" "db_pass" {
   length = 15
   special = true
-  override_special = "£$%"
+  override_special = "!%"
 }
 
 resource "aws_secretsmanager_secret" "db_secret_pass" {
