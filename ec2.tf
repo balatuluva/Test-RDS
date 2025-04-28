@@ -7,7 +7,6 @@ resource "aws_instance" "RDS-EC2" {
   vpc_security_group_ids = ["${aws_security_group.RDS-VPC-SG.id}"]
   associate_public_ip_address = true
   iam_instance_profile = "Delete-Later"
-  depends_on = [aws_security_group.RDS-VPC-SG]
 
   tags = {
     Name = "RDS-EC2"

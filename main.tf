@@ -115,7 +115,7 @@ resource "aws_security_group" "RDS-VPC-SG" {
     protocol = "tcp"
     from_port = 3306
     to_port = 3306
-    cidr_blocks = [aws_instance.RDS-EC2.private_ip]
+    cidr_blocks = ["192.168.1.0/24", "192.168.2.0/24", "192.168.3.0/24"]
   }
 
   egress {
