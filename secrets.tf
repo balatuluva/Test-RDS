@@ -4,11 +4,11 @@ resource "random_password" "db_pass" {
   override_special = "!%"
 }
 
-resource "aws_secretsmanager_secret" "db_secret_pass" {
+resource "aws_secretsmanager_secret" "db_secret_passkey" {
   name = "db_secret_pass"
 }
 
 resource "aws_secretsmanager_secret_version" "db_secret_ver" {
   secret_string = random_password.db_pass.result
-  secret_id = aws_secretsmanager_secret.db_secret_pass.id
+  secret_id = aws_secretsmanager_secret.db_secret_passkey.id
 }
